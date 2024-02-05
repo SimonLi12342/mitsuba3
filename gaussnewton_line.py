@@ -64,7 +64,7 @@ def JT_y(x_eval, y_input, sc):
     return res
 
 
-def conjugate_gradient(x_eval, residual, sc):
+def conjugate_gradient_line(x_eval, residual, sc):
     """
     Computes Gauss-Newton descent direction `(J^T J)^{-1} J^T residual` using
     Conjugate Gradient. 
@@ -270,7 +270,7 @@ class SceneManager():
     def eval_func(self):
         raise NotImplementedError
 
-class AlbedoScene(SceneManager):
+class AlbedoScene_line(SceneManager):
     def __init__(self, scene, params, keys, sensor = None, ref_images = None, _EXP_IDX = 0):
         super().__init__(scene, params, keys)
         self._EXP_IDX = _EXP_IDX
@@ -362,7 +362,7 @@ class AlbedoScene(SceneManager):
 
     def step(self, descent_dir):
         prev_val = self.values()
-        #prev_image, prev_loss = self.eval_func()
+        prev_image, prev_loss = self.eval_func()
         # step_size = 1e6
         # step = 0
         # # f(x + alpha * d) <= f(x) + c1 * alpha * d * gradient
@@ -371,22 +371,22 @@ class AlbedoScene(SceneManager):
         #     val_test = curr_val + descent_dir * step_size
         
         
-        # step_size=32.0
-        # max_l_iter=20
-        # c1=1e-7
-        # new_val = prev_val
+        step_size=32.0
+        max_l_iter=10
+        c1=1e-7
+        new_val = prev_val
         
-        # for l_iter in range(max_l_iter):
-        #     print("l_iter: ", l_iter)
-        #     step_size *= 0.5
-        #     new_val = prev_val + step_size * descent_dir
-        #     new_image, new_loss = self.eval_func(new_val)
-        #     armijo = dr.all(new_loss <= prev_loss + c1 * step_size * dr.sum(dr.dot(descent_dir, -self.gradient)))
-        #     print(armijo)
-        #     if armijo or l_iter == max_l_iter-1:
-        #         break
+        for l_iter in range(max_l_iter):
+            print("l_iter: ", l_iter)
+            step_size *= 0.5
+            new_val = prev_val + step_size * descent_dir
+            new_image, new_loss = self.eval_func(new_val)
+            armijo = dr.all(new_loss <= prev_loss + c1 * step_size * dr.sum(dr.dot(descent_dir, -self.gradient)))
+            print(armijo)
+            if armijo or l_iter == max_l_iter-1:
+                break
 
-        new_val = prev_val + descent_dir
+        # new_val = prev_val + descent_dir
         # Clamp the value to [0, 1]
         new_val = dr.clamp(new_val[0:3], 0.0, 1.0)
         # new_val = dr.clamp(new_val, 0.0, 1.0)
